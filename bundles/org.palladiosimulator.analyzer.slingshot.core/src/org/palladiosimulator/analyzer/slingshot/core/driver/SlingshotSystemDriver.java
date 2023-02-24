@@ -8,9 +8,7 @@ import javax.inject.Singleton;
 import org.palladiosimulator.analyzer.slingshot.common.events.SystemEvent;
 import org.palladiosimulator.analyzer.slingshot.core.annotations.SystemBehaviorExtensions;
 import org.palladiosimulator.analyzer.slingshot.core.api.SystemDriver;
-import org.palladiosimulator.analyzer.slingshot.core.behavior.CoreBehavior;
 import org.palladiosimulator.analyzer.slingshot.core.extension.SystemBehaviorContainer;
-import org.palladiosimulator.analyzer.slingshot.core.extension.SimulationBehaviorExtension;
 import org.palladiosimulator.analyzer.slingshot.core.extension.SystemBehaviorExtension;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.Bus;
 
@@ -18,13 +16,13 @@ import com.google.inject.Injector;
 
 @Singleton
 public class SlingshotSystemDriver implements SystemDriver {
-	
+
 	private final Bus systemBus;
 	private final Injector parentInjector;
 	private final List<SystemBehaviorContainer> behaviorContainers;
-	
-	private boolean running = false;
-	
+
+	private final boolean running = false;
+
 	@Inject
 	public SlingshotSystemDriver(
 			final Injector parentInjector,
@@ -34,12 +32,12 @@ public class SlingshotSystemDriver implements SystemDriver {
 		this.behaviorContainers = behaviorContainer;
 		this.init();
 	}
-	
+
 	private void init() {
 		final Injector childInjector = this.parentInjector.createChildInjector(behaviorContainers);
 		//System.out.println("Initialize System extensions");
 		//System.out.println("Numbers of containers " + this.behaviorContainers.size());
-		
+
 		behaviorContainers.stream()
 			.flatMap(extensions -> extensions.getExtensions().stream())
 		//	.peek(simExtension -> System.out.println("Check " + simExtension.getSimpleName()))
@@ -54,10 +52,10 @@ public class SlingshotSystemDriver implements SystemDriver {
 	}
 
 	@Override
-	public void postEvent(SystemEvent systemEvent) {
+	public void postEvent(final SystemEvent systemEvent) {
 		this.systemBus.post(systemEvent);
 	}
-	
+
 	@Override
 	public void postEventAndThen(final SystemEvent systemEvent, final Runnable runnable) {
 		this.systemBus.post(systemEvent);
@@ -68,5 +66,5 @@ public class SlingshotSystemDriver implements SystemDriver {
 	public boolean isRunning() {
 		return this.running;
 	}
-	
+
 }

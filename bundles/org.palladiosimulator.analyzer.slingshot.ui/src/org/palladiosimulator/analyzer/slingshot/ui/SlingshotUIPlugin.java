@@ -4,7 +4,6 @@ import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.palladiosimulator.analyzer.slingshot.core.Slingshot;
-import org.palladiosimulator.analyzer.slingshot.eventdriver.Bus;
 import org.palladiosimulator.analyzer.slingshot.workflow.SimulationWorkflowPlugin;
 
 public class SlingshotUIPlugin extends Plugin implements BundleActivator {
@@ -13,11 +12,11 @@ public class SlingshotUIPlugin extends Plugin implements BundleActivator {
 
 	// Activate the workflow as well
 	private SimulationWorkflowPlugin workflowPlugin = null;
-	
+
 	private Slingshot slingshot = null;
 
 	@Override
-	public void start(BundleContext context) throws Exception {
+	public void start(final BundleContext context) throws Exception {
 		instance = this;
 		slingshot = Slingshot.getInstance();
 		workflowPlugin = SimulationWorkflowPlugin.getInstance();
@@ -25,12 +24,12 @@ public class SlingshotUIPlugin extends Plugin implements BundleActivator {
 	}
 
 	@Override
-	public void stop(BundleContext context) throws Exception {
+	public void stop(final BundleContext context) throws Exception {
 		instance = null;
 		slingshot = null;
 		super.stop(context);
 	}
-	
-	
-	
+
+
+
 }
