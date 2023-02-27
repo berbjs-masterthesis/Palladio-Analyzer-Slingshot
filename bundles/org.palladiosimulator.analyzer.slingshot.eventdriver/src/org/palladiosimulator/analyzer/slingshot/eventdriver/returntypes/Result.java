@@ -1,9 +1,10 @@
 package org.palladiosimulator.analyzer.slingshot.eventdriver.returntypes;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -13,7 +14,7 @@ import java.util.Set;
  *
  * The container itself is a set, that means there is no guarantee of order.
  *
- * @author Julijan Katic
+ * @author Julijan Katic, Sarah Stieß
  *
  * @param <T> The containers type
  */
@@ -36,14 +37,27 @@ public final class Result<T> {
 	}
 
 	public static <T> Result<T> of(final T... events) {
-		return Result.from(Arrays.asList(events));
+		return new Result<>(List.of(events));
 	}
 
+	public static <T, S extends T> Result<T> of(final Collection<S> resultEvents) {
+		return new Result<>(List.copyOf(resultEvents));
+	}
+
+	public static <T, S extends T> Result<T> of(final Optional<S> resultEvent) {
+		if (resultEvent.isPresent()) {
+			return new Result<>(List.of(resultEvent.get()));
+		}
+		return new Result<>(List.of());
+	}
+
+	@Deprecated
 	public static <T> Result<T> from(final Collection<T> resultEvents) {
 		return new Result<>(resultEvents);
 	}
 
+	@Deprecated
 	public static <T> Result<T> empty() {
-		return new Result<>(null);
+		return new Result<>(List.of());
 	}
 }
