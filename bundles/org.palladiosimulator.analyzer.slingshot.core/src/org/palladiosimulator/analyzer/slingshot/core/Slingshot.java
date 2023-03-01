@@ -29,7 +29,7 @@ public class Slingshot extends Plugin {
 	private static Slingshot bundle = null;
 	private List<AbstractSlingshotExtension> extensions = null;
 
-	private InjectorHolder slingshotModule;
+	private InjectorHolder injectionHolder;
 
 	static {
 		setupLoggingLevelToDebug();
@@ -38,7 +38,7 @@ public class Slingshot extends Plugin {
 	@Override
 	public void start(final BundleContext context) throws Exception {
 		bundle = this;
-		this.slingshotModule = new InjectorHolder();
+		this.injectionHolder = new InjectorHolder();
 		LOGGER.debug("Slingshot started");
 		super.start(context);
 	}
@@ -47,7 +47,7 @@ public class Slingshot extends Plugin {
 	public void stop(final BundleContext context) throws Exception {
 		bundle = null;
 		this.extensions = null;
-		this.slingshotModule = null;
+		this.injectionHolder = null;
 		LOGGER.debug("Slingshot ended");
 		super.stop(context);
 	}
@@ -60,25 +60,24 @@ public class Slingshot extends Plugin {
 		return Collections.unmodifiableList(this.extensions);
 	}
 
-
 	public static Slingshot getInstance() {
 		return bundle;
 	}
 
 	public SystemDriver getSystemDriver() {
-		return slingshotModule.getInstance(SystemDriver.class); // TODO
+		return injectionHolder.getInstance(SystemDriver.class); // TODO
 	}
 
 	public SimulationDriver getSimulationDriver() {
-		return slingshotModule.getInstance(SimulationDriver.class);
+		return injectionHolder.getInstance(SimulationDriver.class);
 	}
 
 	public <T> T getInstance(final Class<T> clazz) {
-		return this.slingshotModule.getInstance(clazz);
+		return this.injectionHolder.getInstance(clazz);
 	}
 
 	public <T> Provider<T> getProvider(final Class<T> clazz) {
-		return this.slingshotModule.getProvider(clazz);
+		return this.injectionHolder.getProvider(clazz);
 	}
 
 	private static void setupLoggingLevelToDebug() {
