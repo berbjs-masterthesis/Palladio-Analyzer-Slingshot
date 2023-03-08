@@ -1,7 +1,8 @@
 package org.palladiosimulator.analyzer.slingshot.core.api;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.palladiosimulator.analyzer.workflow.blackboard.PCMResourceSetPartition;
+import org.palladiosimulator.analyzer.slingshot.common.events.DESEvent;
+import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.Subscriber;
 
 import de.uka.ipd.sdq.simucomframework.SimuComConfig;
 
@@ -14,5 +15,9 @@ public interface SimulationDriver extends SimulationScheduling {
 	public void stop();
 	
 	public boolean isRunning();
+	
+	public boolean isInitialized();
+	
+	public <T extends DESEvent> void registerEventHandler(final Subscriber<T> subscriber);
 	
 }

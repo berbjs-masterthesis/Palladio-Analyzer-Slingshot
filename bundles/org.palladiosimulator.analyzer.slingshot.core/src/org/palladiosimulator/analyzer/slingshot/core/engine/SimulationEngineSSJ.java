@@ -10,6 +10,7 @@ import org.palladiosimulator.analyzer.slingshot.core.api.SimulationEngine;
 import org.palladiosimulator.analyzer.slingshot.core.api.SimulationInformation;
 import org.palladiosimulator.analyzer.slingshot.core.extension.SimulationBehaviorExtension;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.Bus;
+import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.Subscriber;
 
 import umontreal.ssj.simevents.Event;
 import umontreal.ssj.simevents.Simulator;
@@ -118,6 +119,11 @@ public class SimulationEngineSSJ implements SimulationEngine, SimulationInformat
 	@Override
 	public void registerEventListener(SimulationBehaviorExtension guavaEventClass) {
 		this.eventBus.register(guavaEventClass);
+	}
+	
+	@Override
+	public <T> void registerEventListener(final Subscriber<T> subscriber) {
+		this.eventBus.register(subscriber);
 	}
 
 }

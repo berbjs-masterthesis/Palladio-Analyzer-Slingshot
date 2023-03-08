@@ -33,14 +33,14 @@ public class BusTest {
 	
 	@PreIntercept
 	public InterceptionResult preIntercept(final InterceptorInformation inf, final SomeEvent event) {
-		System.out.println("We intercept this SomeEvent of the method " + inf.getMethod().getName());
+		System.out.println("We intercept this SomeEvent of the method " + inf.getName());
 		return InterceptionResult.success();
 	}
 	
 	@PreIntercept
 	public InterceptionResult preIntercept(final InterceptorInformation inf, final SomeOtherEvent event) {
 		System.out.println("We want to stop onAnotherTestEvent");
-		if (inf.getMethod().getName().equals("onAnotherTestEvent")) {
+		if (inf.getName().equals("onAnotherTestEvent")) {
 			return InterceptionResult.abort();
 		} else {
 			return InterceptionResult.success();

@@ -11,12 +11,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.apache.log4j.Logger;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.Bus;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.annotations.OnException;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.annotations.PostIntercept;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.annotations.PreIntercept;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.annotations.Subscribe;
-import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.AbstractSubscriber;
+import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.Subscriber;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.AnnotatedSubscriber;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.interceptors.CompositeInterceptor;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.interceptors.CompositePostInterceptor;
@@ -35,6 +36,8 @@ import io.reactivex.rxjava3.subjects.Subject;
 
 public final class BusImplementation implements Bus {
 	
+	private static final Logger LOGGER = Logger.getLogger(BusImplementation.class);
+	
 	private final Subject<Object> bus;
 	
 	/** Maps events (event classes) to handlers */
@@ -46,7 +49,7 @@ public final class BusImplementation implements Bus {
 	private final Map<Class<?>, Set<Consumer<? super Throwable>>> exceptionHandlers = new HashMap<>();
 	
 	
-	private final Map<Class<?>, Set<AbstractSubscriber<?>>> subscribers = new HashMap<>();
+	private final Map<Class<?>, Set<Subscriber<?>>> subscribers = new HashMap<>();
 	
 	private boolean registrationOpened = true;
 	private boolean invocationOpened = true;
@@ -72,6 +75,15 @@ public final class BusImplementation implements Bus {
 	public String getIdentifier() {
 		return this.identifier;
 	}
+	
+	public <T> void register(final Subscriber<T> subscriber) {
+		if (!this.registrationOpened) {
+			throw new IllegalStateException("This bus has closed registration for new subscribers");
+		}
+		Objects.requireNonNull(subscriber, "Subscriber must not be null!");
+		
+		
+	}
 
 	@Override
 	public void register(final Object object) {
@@ -83,7 +95,8 @@ public final class BusImplementation implements Bus {
 		final Class<?> observerClass = object.getClass();
 		
 		if (observers.putIfAbsent(observerClass, new CompositeDisposable()) != null) {
-			throw new IllegalArgumentException("Observer has already been registered.");
+			LOGGER.warn("Observer has already been registered");
+			//throw new IllegalArgumentException("Observer has already been registered.");
 		}
 		
 		final CompositeDisposable composite = observers.get(observerClass);
@@ -111,7 +124,7 @@ public final class BusImplementation implements Bus {
 		Objects.requireNonNull(composite, "Missing observer; it was not registered before.");
 		composite.dispose();
 		
-		final Set<AbstractSubscriber<?>> subscribers = this.subscribers.remove(observers.getClass());
+		final Set<Subscriber<?>> subscribers = this.subscribers.remove(observers.getClass());
 		if (subscribers != null) {
 			subscribers.clear();
 		}
@@ -124,6 +137,11 @@ public final class BusImplementation implements Bus {
 		}
 		System.out.println("Now post " + event.getClass().getSimpleName());
 		this.bus.onNext(Objects.requireNonNull(event));
+	}
+	
+	private CompositeDisposable getDisposable(final Class<?> event) {
+		// TODO
+		return null;
 	}
 
 	private void searchForSubscribers(final CompositeDisposable composite, 
@@ -157,22 +175,24 @@ public final class BusImplementation implements Bus {
 		}
 		
 		
-		System.out.println("\tAdded subscriber method " + method.getName());
+		LOGGER.debug("\tAdded subscriber method " + method.getName());
 		composite.add(
 				this.bus.ofType(eventClass)
 						.doOnNext(ev -> System.out.println("ON NEXT " + ev.getClass().getSimpleName()))
 						.subscribe(
-								new AnnotatedSubscriber(method, object, compositeInterceptor, compositeInterceptor, subscribeAnnotation),
-								error -> {
-									System.out.println("Error happened: " + error.getClass().getSimpleName() + ":: " + error.getMessage());
-							    	this.exceptionHandlers.keySet().stream()
-							    		.filter(exClazz -> exClazz.isAssignableFrom(error.getClass()))
-							    		.flatMap(exClazz -> this.exceptionHandlers.get(exClazz).stream())
-							    		.forEach(exHandler -> exHandler.accept(error));
-							    }
+								(Subscriber) AnnotatedSubscriber.fromJavaMethod(eventClass, returnType, method, subscribeAnnotation, compositeInterceptor, compositeInterceptor).build(),
+								this::doError
 						)
 		);
 		
+	}
+	
+	private void doError(final Throwable error) {
+		LOGGER.error("An error occurred: " + error.getClass().getSimpleName() + ":: " + error.getMessage());
+		this.exceptionHandlers.keySet().stream()
+				.filter(exClazz -> exClazz.isAssignableFrom(error.getClass()))
+				.flatMap(exClazz -> this.exceptionHandlers.get(exClazz).stream())
+				.forEach(exHandler -> exHandler.accept(error));
 	}
 	
 	private void searchPreInterceptors(final Method method, final Object object) {
@@ -216,18 +236,6 @@ public final class BusImplementation implements Bus {
 			onException = exception -> {
 				try {
 					method.invoke(target, exception);
-				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-					// TODO:
-				}
-			};
-		} else if (params.length == 2) {
-			if (!Throwable.class.isAssignableFrom(params[0]) || params[1].equals(InterceptorInformation.class)) {
-				throw new IllegalArgumentException("First parameter must be throwable type and the second must be of type InterceptorInformation");
-			}
-			
-			onException = exception -> {
-				try {
-					method.invoke(target, exception, new InterceptorInformation(target, method));
 				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 					// TODO:
 				}

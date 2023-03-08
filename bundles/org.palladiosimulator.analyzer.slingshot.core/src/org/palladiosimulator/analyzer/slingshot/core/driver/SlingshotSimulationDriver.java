@@ -2,14 +2,11 @@ package org.palladiosimulator.analyzer.slingshot.core.driver;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.inject.Singleton;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.palladiosimulator.analyzer.slingshot.common.events.DESEvent;
-import org.palladiosimulator.analyzer.slingshot.common.events.SlingshotEvent;
-import org.palladiosimulator.analyzer.slingshot.core.Slingshot;
 import org.palladiosimulator.analyzer.slingshot.core.annotations.SimulationBehaviorExtensions;
 import org.palladiosimulator.analyzer.slingshot.core.api.SimulationDriver;
 import org.palladiosimulator.analyzer.slingshot.core.api.SimulationEngine;
@@ -17,14 +14,10 @@ import org.palladiosimulator.analyzer.slingshot.core.behavior.CoreBehavior;
 import org.palladiosimulator.analyzer.slingshot.core.events.PreSimulationConfigurationStarted;
 import org.palladiosimulator.analyzer.slingshot.core.events.SimulationFinished;
 import org.palladiosimulator.analyzer.slingshot.core.events.SimulationStarted;
-import org.palladiosimulator.analyzer.slingshot.core.extension.AbstractSlingshotExtension;
-import org.palladiosimulator.analyzer.slingshot.core.extension.SystemBehaviorContainer;
-import org.palladiosimulator.analyzer.slingshot.core.extension.ExtensionIds;
 import org.palladiosimulator.analyzer.slingshot.core.extension.SimulationBehaviorContainer;
 import org.palladiosimulator.analyzer.slingshot.core.extension.SimulationBehaviorExtension;
-import org.palladiosimulator.analyzer.workflow.blackboard.PCMResourceSetPartition;
-import org.palladiosimulator.commons.eclipseutils.ExtensionHelper;
-import org.palladiosimulator.pcm.allocation.Allocation;
+import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.Subscriber;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -142,7 +135,6 @@ public class SlingshotSimulationDriver implements SimulationDriver {
 		
 		public SimulationDriverSubModule(final IProgressMonitor monitor,
 										 final SimuComConfig config) {
-		//	this.partition = partition;
 			this.monitor = monitor;
 			this.config = config;
 		}
@@ -153,9 +145,16 @@ public class SlingshotSimulationDriver implements SimulationDriver {
 			return this.monitor;
 		}
 		
-		//@Provides
-		//public SimuComConfig config() {
-		//	return this.config;
-		//}
 	}
+
+	@Override
+	public boolean isInitialized() {
+		return this.initialized;
+	}
+
+	@Override
+	public <T extends DESEvent> void registerEventHandler(final Subscriber<T> subscriber) {
+		this.engine.registerEventListener(subscriber);
+	}
+
 }

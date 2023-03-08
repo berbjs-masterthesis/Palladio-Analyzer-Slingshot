@@ -1,10 +1,13 @@
 package org.palladiosimulator.analyzer.slingshot.eventdriver;
 
+import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.Subscriber;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.internal.BusImplementation;
 
 public interface Bus {
 
 	public String getIdentifier();
+	
+	public <T> void register(final Subscriber<T> subscriber);
 	
 	public void register(final Object object);
 	

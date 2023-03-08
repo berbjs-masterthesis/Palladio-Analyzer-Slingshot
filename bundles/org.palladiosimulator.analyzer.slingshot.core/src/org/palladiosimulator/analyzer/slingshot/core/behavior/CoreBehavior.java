@@ -36,7 +36,7 @@ public class CoreBehavior implements SimulationBehaviorExtension {
 	
 	@PostIntercept
 	public InterceptionResult rescheduleNextEvents(final InterceptorInformation interceptionInformation, final DESEvent event, final Result result) {
-		LOGGER.debug("call post interception from " + interceptionInformation.getMethod().getName());
+		LOGGER.debug("call post interception from " + interceptionInformation.getName());
 		
 		result.getResultEvents().forEach(nextEvent -> {
 			LOGGER.debug("Result is " + nextEvent.getClass().getName());
