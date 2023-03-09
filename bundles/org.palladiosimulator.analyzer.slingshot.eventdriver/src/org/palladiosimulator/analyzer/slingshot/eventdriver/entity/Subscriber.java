@@ -26,8 +26,8 @@ public class Subscriber<T> implements Consumer<T>, Disposable, Comparable<Subscr
 	private final Class<?> handlerType;
 	private final Optional<Class<?>> enclosingType;
 	private final Class<T> forEvent;
-	private final Optional<IPreInterceptor> preInterceptor;
-	private final Optional<IPostInterceptor> postInterceptor;
+	private Optional<IPreInterceptor> preInterceptor;
+	private Optional<IPostInterceptor> postInterceptor;
 	private final List<EventContract> associatedContracts;
 
 	private Subscriber(final Builder<T> builder) {
@@ -58,6 +58,7 @@ public class Subscriber<T> implements Consumer<T>, Disposable, Comparable<Subscr
 		final Result<?> result = this.handler.acceptEvent(event);
 		
 
+		// TODO: What to do with that?
 		final InterceptionResult postInterceptionResult = this.postInterceptor
 				.map(postInterceptor -> postInterceptor.apply(preInterceptionInformation, event, result))
 				.orElseGet(() -> InterceptionResult.success());
@@ -81,6 +82,13 @@ public class Subscriber<T> implements Consumer<T>, Disposable, Comparable<Subscr
 		return Integer.compare(other.priority, priority);
 	}
 	
+	public void addPreInterceptor(final IPreInterceptor preInterceptor) {
+		if (this.preInterceptor.isPresent()) {
+			final IPreInterceptor currentPreInterceptor = this.preInterceptor.get();
+			
+		}
+	}
+	
 	public int getPriority() {
 		return this.priority;
 	}
@@ -94,7 +102,7 @@ public class Subscriber<T> implements Consumer<T>, Disposable, Comparable<Subscr
 	}
 
 	public Class<?> getHandlerType() {
-		return Function.class;
+		return this.handlerType;
 	}
 
 	public Optional<Class<?>> getEnclosingType() {
