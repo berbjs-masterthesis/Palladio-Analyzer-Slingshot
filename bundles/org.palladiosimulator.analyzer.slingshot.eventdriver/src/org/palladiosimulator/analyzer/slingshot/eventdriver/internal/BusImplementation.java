@@ -82,7 +82,10 @@ public final class BusImplementation implements Bus {
 		}
 		Objects.requireNonNull(subscriber, "Subscriber must not be null!");
 		
-		
+		observers.computeIfAbsent(subscriber.getEnclosingType().orElse(Object.class), cl -> new CompositeDisposable())
+				 .add(this.bus.ofType(subscriber.getEventType())
+						 	  .doOnNext(ev -> LOGGER.debug("General subscriber called: " + ev.getClass().getSimpleName()))
+						 	  .subscribe(subscriber, this::doError));
 	}
 
 	@Override
@@ -180,7 +183,7 @@ public final class BusImplementation implements Bus {
 				this.bus.ofType(eventClass)
 						.doOnNext(ev -> System.out.println("ON NEXT " + ev.getClass().getSimpleName()))
 						.subscribe(
-								(Subscriber) AnnotatedSubscriber.fromJavaMethod(eventClass, returnType, method, subscribeAnnotation, compositeInterceptor, compositeInterceptor).build(),
+								(Subscriber) AnnotatedSubscriber.fromJavaMethod(eventClass, object, method, subscribeAnnotation, compositeInterceptor, compositeInterceptor).build(),
 								this::doError
 						)
 		);
