@@ -7,11 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.inject.Provider;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
 import com.google.inject.AbstractModule;
-import com.google.inject.Provider;
 
 public abstract class AbstractSlingshotExtension extends AbstractModule {
 
@@ -39,7 +40,7 @@ public abstract class AbstractSlingshotExtension extends AbstractModule {
 		bind(model).toProvider(provider);
 	}
 
-	protected final <T extends Object> void provideForDelay(final Class<T> bindee,
+	protected final <T extends Object> void install(final Class<T> bindee,
 			final Class<? extends Provider<T>> provider) {
 		if (this.bindee2provider == null) {
 			this.bindee2provider = new HashMap<>();
