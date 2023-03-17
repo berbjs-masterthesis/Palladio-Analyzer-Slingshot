@@ -2,7 +2,6 @@ package org.palladiosimulator.analyzer.slingshot.core.driver;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.inject.Singleton;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -16,7 +15,6 @@ import org.palladiosimulator.analyzer.slingshot.core.events.SimulationFinished;
 import org.palladiosimulator.analyzer.slingshot.core.events.SimulationStarted;
 import org.palladiosimulator.analyzer.slingshot.core.extension.SimulationBehaviorContainer;
 import org.palladiosimulator.analyzer.slingshot.core.extension.SimulationBehaviorExtension;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -49,15 +47,13 @@ public class SlingshotSimulationDriver implements SimulationDriver {
 
 	@Override
 	public void init(final SimuComConfig config, final IProgressMonitor monitor) {
-//		if (!this.initialized) {
+		final List<Module> partitionIncludedStream = new ArrayList<>(behaviorContainers.size() + 2);
+		partitionIncludedStream.add(new SimulationDriverSubModule(monitor));
 
-			final List<Module> partitionIncludedStream = new ArrayList<>(behaviorContainers.size() + 1);
-			partitionIncludedStream.add(new SimulationDriverSubModule(monitor));
-			partitionIncludedStream.addAll(behaviorContainers);
+		partitionIncludedStream.addAll(behaviorContainers);
 
 
-			 final Injector childInjector = this.parentInjector.createChildInjector(partitionIncludedStream);
-//		}
+		final Injector childInjector = this.parentInjector.createChildInjector(partitionIncludedStream);
 
 		this.monitor = monitor;
 		this.config = config;
@@ -78,7 +74,7 @@ public class SlingshotSimulationDriver implements SimulationDriver {
 
 	@Override
 	public void start() {
-		if (this.isRunning()  || !this.initialized) {
+		if (this.isRunning() || !this.initialized) {
 			return;
 		}
 
@@ -106,7 +102,6 @@ public class SlingshotSimulationDriver implements SimulationDriver {
 		return this.running;
 	}
 
-
 	@Override
 	public void scheduleEvent(final DESEvent event) {
 		if (!this.isRunning()) {
@@ -125,7 +120,6 @@ public class SlingshotSimulationDriver implements SimulationDriver {
 		this.engine.scheduleEventAt(event, simulationTime);
 	}
 
-
 	/**
 	 * Module to provide Simulation Run Specific Instances, that already exist, such
 	 * as the simuCom config and the progress monitor.
@@ -139,15 +133,14 @@ public class SlingshotSimulationDriver implements SimulationDriver {
 			this.monitor = monitor;
 		}
 
-
 		@Provides
 		public IProgressMonitor monitor() {
 			return this.monitor;
 		}
 
-		//@Provides
-		//public SimuComConfig config() {
-		//	return this.config;
-		//}
+//		@Provides
+//		public SimuComConfig config() {
+//			return config;
+//		}
 	}
 }
