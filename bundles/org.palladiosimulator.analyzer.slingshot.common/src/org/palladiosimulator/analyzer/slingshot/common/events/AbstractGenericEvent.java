@@ -1,6 +1,7 @@
 package org.palladiosimulator.analyzer.slingshot.common.events;
 
 import com.google.common.reflect.TypeToken;
+import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.ReifiedEvent;
 
 /**
  * This abstract event is used for the special case that an event uses generics

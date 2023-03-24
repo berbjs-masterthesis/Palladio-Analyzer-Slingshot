@@ -5,7 +5,6 @@ import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.palladiosimulator.analyzer.slingshot.common.events.ReifiedEvent;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.annotations.Subscribe;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.interceptors.IPostInterceptor;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.interceptors.IPreInterceptor;

@@ -1,4 +1,4 @@
-package org.palladiosimulator.analyzer.slingshot.common.events;
+package org.palladiosimulator.analyzer.slingshot.eventdriver.entity;
 
 import com.google.common.reflect.TypeToken;
 
