@@ -173,8 +173,7 @@ public class Subscriber<T> implements Consumer<T>, Disposable, Comparable<Subscr
 			}
 
 			final ReifiedEvent<?> reifiedEvent = (ReifiedEvent<?>) event;
-			return this.reifiedClasses.stream()
-									  .anyMatch(type -> reifiedEvent.getTypeToken().getRawType().equals(type));
+			return this.reifiedClasses.stream().anyMatch(type -> type.isAssignableFrom(reifiedEvent.getTypeToken().getRawType()));
 		}
 		// Since it's not a reified event, check is not needed.
 		return true;
