@@ -53,6 +53,7 @@ public final class BusImplementation implements Bus {
 
 	private final Map<Class<?>, Set<Subscriber<?>>> subscribers = new HashMap<>();
 
+
 	private boolean registrationOpened = true;
 	private boolean invocationOpened = true;
 
@@ -134,7 +135,6 @@ public final class BusImplementation implements Bus {
 		}
 		Objects.requireNonNull(composite, "Missing observer; it was not registered before.");
 		composite.dispose();
-
 		final Set<Subscriber<?>> subscribers = this.subscribers.remove(observers.getClass());
 		if (subscribers != null) {
 			subscribers.clear();
@@ -249,6 +249,7 @@ public final class BusImplementation implements Bus {
 				// TODO:
 			}
 		};
+
 
 		this.exceptionHandlers.computeIfAbsent(params[0], eventType -> new HashSet<>())
 							  .add(onException);

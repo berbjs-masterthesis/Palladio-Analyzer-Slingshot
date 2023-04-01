@@ -9,7 +9,6 @@ import org.palladiosimulator.analyzer.slingshot.core.api.SimulationDriver;
 import org.palladiosimulator.analyzer.slingshot.core.events.SimulationFinished;
 import org.palladiosimulator.analyzer.slingshot.core.exceptions.IllegalResultException;
 import org.palladiosimulator.analyzer.slingshot.core.extension.SimulationBehaviorExtension;
-import org.palladiosimulator.analyzer.slingshot.core.extension.SystemBehaviorExtension;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.annotations.OnException;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.annotations.PostIntercept;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.annotations.Subscribe;
@@ -20,10 +19,10 @@ import org.palladiosimulator.analyzer.slingshot.eventdriver.returntypes.Result;
 
 @OnEvent(when = SimulationFinished.class)
 public class CoreBehavior implements SimulationBehaviorExtension {
-	
+
 	private static final Logger LOGGER = LogManager.getLogger(CoreBehavior.class);
 	private final SimulationDriver simulationDriver;
-	
+
 	@Inject
 	public CoreBehavior(final SimulationDriver simulationDriver) {
 		this.simulationDriver = simulationDriver;
@@ -33,11 +32,11 @@ public class CoreBehavior implements SimulationBehaviorExtension {
 	public void onSimulationFinished(final SimulationFinished simulationFinished) {
 		this.simulationDriver.stop();
 	}
-	
+
 	@PostIntercept
-	public InterceptionResult rescheduleNextEvents(final InterceptorInformation interceptionInformation, final DESEvent event, final Result result) {
+	public InterceptionResult rescheduleNextEvents(final InterceptorInformation interceptionInformation, final DESEvent event, final Result<?> result) {
 		LOGGER.debug("call post interception from " + interceptionInformation.getName());
-		
+
 		result.getResultEvents().forEach(nextEvent -> {
 			LOGGER.debug("Result is " + nextEvent.getClass().getName());
 			if (nextEvent instanceof DESEvent) {
@@ -48,13 +47,13 @@ public class CoreBehavior implements SimulationBehaviorExtension {
 						+ ", but instead " + nextEvent.getClass().getName() + ".");
 			}
 		});
-		
+
 		return InterceptionResult.success();
 	}
-	
+
 	@OnException
 	public void onGenericException(final Exception exception) {
 		LOGGER.error("A weird exception has occured: ", exception);
 	}
-	
+
 }

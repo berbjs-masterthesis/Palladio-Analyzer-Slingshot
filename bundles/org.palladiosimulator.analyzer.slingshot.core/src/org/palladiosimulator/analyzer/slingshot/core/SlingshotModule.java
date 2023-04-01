@@ -1,8 +1,6 @@
 package org.palladiosimulator.analyzer.slingshot.core;
 
-
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.inject.Singleton;
@@ -15,7 +13,6 @@ import org.palladiosimulator.analyzer.slingshot.core.api.SimulationDriver;
 import org.palladiosimulator.analyzer.slingshot.core.api.SimulationEngine;
 import org.palladiosimulator.analyzer.slingshot.core.api.SimulationScheduling;
 import org.palladiosimulator.analyzer.slingshot.core.api.SystemDriver;
-import org.palladiosimulator.analyzer.slingshot.core.behavior.CoreBehavior;
 import org.palladiosimulator.analyzer.slingshot.core.driver.SlingshotSimulationDriver;
 import org.palladiosimulator.analyzer.slingshot.core.driver.SlingshotSystemDriver;
 import org.palladiosimulator.analyzer.slingshot.core.engine.SimulationEngineSSJ;
@@ -29,26 +26,26 @@ import com.google.inject.Provides;
 /**
  * This is the central class where all the Slingshot modules are defined, and where
  * the initial {@link Injector} is defined.
- * 
+ *
  * @author Julijan Katic
  *
  */
 public class SlingshotModule extends AbstractModule {
-	
+
 	private final Logger LOGGER = LogManager.getLogger(SlingshotModule.class);
 
 	private final List<SystemBehaviorContainer> systemContainers;
 	private final List<SimulationBehaviorContainer> simulationContainers;
-	
+
 	public SlingshotModule() {
 		this.systemContainers = Slingshot.getInstance().getExtensions().stream()
 				.map(extension -> new SystemBehaviorContainer(extension))
 				.collect(Collectors.toList());
 		this.simulationContainers = Slingshot.getInstance().getExtensions().stream()
 				.map(SimulationBehaviorContainer::new)
-				.collect(Collectors.toList());		
+				.collect(Collectors.toList());
 	}
-	
+
 	@Override
 	protected void configure() {
 		bind(PCMResourceSetPartitionProvider.class);
@@ -57,14 +54,14 @@ public class SlingshotModule extends AbstractModule {
 		bind(SimulationEngine.class).to(SimulationEngineSSJ.class);
 		bind(SystemDriver.class).to(SlingshotSystemDriver.class);
 	}
-	
+
 	@Singleton
 	@Provides
 	@SystemBehaviorExtensions
 	public List<SystemBehaviorContainer> getSystemBehaviorContainers() {
 		return this.systemContainers;
 	}
-	
+
 	@Singleton
 	@Provides
 	@SimulationBehaviorExtensions

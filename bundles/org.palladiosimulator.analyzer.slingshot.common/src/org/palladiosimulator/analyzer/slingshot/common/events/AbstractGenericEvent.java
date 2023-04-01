@@ -15,20 +15,20 @@ import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.ReifiedEvent;
  * by the event dispatcher.
  * <p>
  * An example event could be:
- * 
+ *
  * <pre>
  * {@code
  * public final class SomeGenericEvent<T> extends AbstractGenericEvent<T, EntityType>
  * }
  * </pre>
- * 
+ *
  * @author Julijan Katic
  *
  * @param <G> The generic type of the event onto which to distinguish
  * @param <T> The entity type for {@link AbstractEntityChangedEvent}.
  */
 public abstract class AbstractGenericEvent<G, T> extends AbstractEntityChangedEvent<T> implements ReifiedEvent<G> {
-	
+
 	private final TypeToken<G> genericTypeToken;
 
 	/**
@@ -42,7 +42,7 @@ public abstract class AbstractGenericEvent<G, T> extends AbstractEntityChangedEv
 	 * then {@link #getTypeToken()} will return {@code A}, even though {@code b} is
 	 * of instance {@code B}. In this case, use
 	 * {@link #AbstractGenericEvent(Class, T, double)} instead.
-	 * 
+	 *
 	 * @param entity The entity for {@link AbstractEntityChangedEvent}.
 	 * @param delay  The delay of the event.
 	 */
@@ -60,7 +60,7 @@ public abstract class AbstractGenericEvent<G, T> extends AbstractEntityChangedEv
 	 * compile time. Otherwise, if it is possible to instantiate as follows:
 	 * {@code new GenericEvent<A, Entity>(entity, 0);}, then use
 	 * {@link #AbstractGenericEvent(T, double)} instead.
-	 * 
+	 *
 	 * @param concreteClass The concrete class of the type {@code G}.
 	 * @param entity        The entity for {@link AbstractEntityChangedEvent}.
 	 * @param delay         the delay of the event.
@@ -71,6 +71,7 @@ public abstract class AbstractGenericEvent<G, T> extends AbstractEntityChangedEv
 		this.genericTypeToken = TypeToken.of(concreteClass);
 	}
 
+	@Override
 	public TypeToken<G> getTypeToken() {
 		return this.genericTypeToken;
 	}
@@ -79,5 +80,5 @@ public abstract class AbstractGenericEvent<G, T> extends AbstractEntityChangedEv
 		return this.genericTypeToken.getRawType();
 	}
 
-	
+
 }

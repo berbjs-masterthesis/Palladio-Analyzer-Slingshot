@@ -13,19 +13,19 @@ public class CompositeInterceptor implements IPreInterceptor, IPostInterceptor {
 
 	private final Map<Class<?>, List<IPreInterceptor>> preInterceptors = new HashMap<>();
 	private final Map<Class<?>, List<IPostInterceptor>> postInterceptors = new HashMap<>();
-	
+
 	public void add(final Class<?> forEvent, final IPreInterceptor preInterceptor) {
 		this.preInterceptors.computeIfAbsent(forEvent, event -> new LinkedList<>())
 						    .add(preInterceptor);
 	}
-	
+
 	public void add(final Class<?> forEvent, final IPostInterceptor postInterceptor) {
 		this.postInterceptors.computeIfAbsent(forEvent, event -> new LinkedList<>())
 						     .add(postInterceptor);
 	}
-	
+
 	@Override
-	public InterceptionResult apply(InterceptorInformation inf, Object event, Result result) {
+	public InterceptionResult apply(final InterceptorInformation inf, final Object event, final Result<?> result) {
 		final List<InterceptionResult> interceptionResults = this.postInterceptors
 				.entrySet()
 				.stream()
@@ -33,12 +33,12 @@ public class CompositeInterceptor implements IPreInterceptor, IPostInterceptor {
 				.flatMap(entry -> entry.getValue().stream())
 				.map(preInterceptor -> preInterceptor.apply(inf, event, result))
 				.collect(Collectors.toList());
-		
+
 		return InterceptionResult.compositeResult(interceptionResults);
 	}
 
 	@Override
-	public InterceptionResult apply(InterceptorInformation inf, Object event) {
+	public InterceptionResult apply(final InterceptorInformation inf, final Object event) {
 		final List<InterceptionResult> interceptionResults = this.preInterceptors
 				.entrySet()
 				.stream()
@@ -46,8 +46,8 @@ public class CompositeInterceptor implements IPreInterceptor, IPostInterceptor {
 				.flatMap(entry -> entry.getValue().stream())
 				.map(preInterceptor -> preInterceptor.apply(inf, event))
 				.collect(Collectors.toList());
-		
+
 		return InterceptionResult.compositeResult(interceptionResults);
 	}
-	
+
 }

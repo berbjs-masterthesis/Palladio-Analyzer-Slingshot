@@ -60,5 +60,5 @@ public abstract class AnnotatedSubscriber {
 						 .postInterceptor(postInterceptor)
 						 .handler(event -> acceptEvent(event, target, method));
 	}
-	
+
 }
