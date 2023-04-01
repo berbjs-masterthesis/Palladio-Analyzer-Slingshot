@@ -3,7 +3,7 @@ package org.palladiosimulator.analyzer.slingshot.eventdriver.entity.interceptors
 import java.util.List;
 import java.util.Optional;
 
-import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.EventContract;
+import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.SubscriberContract;
 
 public interface InterceptorInformation {
 	
@@ -15,7 +15,7 @@ public interface InterceptorInformation {
 	
 	public Class<?> getEventType();
 	
-	public List<EventContract> getAssociatedContracts();
+	public List<SubscriberContract> getAssociatedContracts();
 	
 	
 }

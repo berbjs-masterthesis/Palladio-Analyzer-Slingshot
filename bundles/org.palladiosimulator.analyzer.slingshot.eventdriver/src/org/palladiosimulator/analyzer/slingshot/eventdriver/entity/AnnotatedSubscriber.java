@@ -49,7 +49,7 @@ public abstract class AnnotatedSubscriber {
 		return Subscriber.builder(forEvent)
 						 .associatedContracts(EventContractChecker
 								 .getOnEventContract(target, forEvent)
-								 .map(onEvent -> EventContract.fromAnnotation(onEvent))
+								 .map(onEvent -> SubscriberContract.fromAnnotation(onEvent))
 								 .collect(Collectors.toList())) // TODO
 						 .handlerType(Method.class)
 						 .enclosingType(target.getClass())

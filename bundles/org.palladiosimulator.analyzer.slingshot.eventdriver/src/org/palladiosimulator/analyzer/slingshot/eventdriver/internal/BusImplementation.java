@@ -126,7 +126,12 @@ public final class BusImplementation implements Bus {
 	@Override
 	public void unregister(final Object object) {
 		Objects.requireNonNull(object, "Observer to unregister must not be null.");
-		final CompositeDisposable composite = this.observers.remove(object.getClass());
+		final CompositeDisposable composite;
+		if (object instanceof String) {
+			composite = this.observers.remove((String) object);
+		} else {
+			composite = this.observers.remove(object.getClass().getName());
+		}
 		Objects.requireNonNull(composite, "Missing observer; it was not registered before.");
 		composite.dispose();
 
