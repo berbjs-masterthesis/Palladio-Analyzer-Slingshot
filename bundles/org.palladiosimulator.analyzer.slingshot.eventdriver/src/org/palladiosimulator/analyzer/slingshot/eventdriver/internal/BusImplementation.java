@@ -185,7 +185,7 @@ public final class BusImplementation implements Bus {
 	}
 
 	private void doError(final Throwable error) {
-		LOGGER.error("An error occurred: " + error.getClass().getSimpleName() + ":: " + error.getMessage());
+		LOGGER.error("An error occurred: " + error.getClass().getSimpleName() + ":: " + error.getMessage(), error);
 		this.exceptionHandlers.keySet().stream()
 				.filter(exClazz -> exClazz.isAssignableFrom(error.getClass()))
 				.flatMap(exClazz -> this.exceptionHandlers.get(exClazz).stream())
