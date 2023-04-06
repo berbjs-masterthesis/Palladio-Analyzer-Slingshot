@@ -38,35 +38,32 @@ public class SlingshotSimulationDriver implements SimulationDriver {
 	private SimuComConfig config;
 
 	@Inject
-	public SlingshotSimulationDriver(final Injector injector, final SimulationEngine engine,
+	public SlingshotSimulationDriver(final SimulationEngine engine, final Injector injector,
 			@SimulationBehaviorExtensions final List<SimulationBehaviorContainer> behaviorContainers) {
+		this.engine = engine;
 		this.parentInjector = injector;
 		this.behaviorContainers = behaviorContainers;
-		this.engine = engine;
 	}
 
 	@Override
 	public void init(final SimuComConfig config, final IProgressMonitor monitor) {
-		final List<Module> partitionIncludedStream = new ArrayList<>(behaviorContainers.size() + 2);
+		final List<Module> partitionIncludedStream = new ArrayList<>(behaviorContainers.size() + 1);
 		partitionIncludedStream.add(new SimulationDriverSubModule(monitor));
-
 		partitionIncludedStream.addAll(behaviorContainers);
-
 
 		final Injector childInjector = this.parentInjector.createChildInjector(partitionIncludedStream);
 
 		this.monitor = monitor;
 		this.config = config;
 
-		behaviorContainers.stream()
-			.flatMap(behaviorContainer -> behaviorContainer.getExtensions().stream())
-			.forEach(simExtensionClass -> {
-				final Object simExtension = childInjector.getInstance(simExtensionClass);
-				if (!(simExtension instanceof SimulationBehaviorExtension)) {
-					return;
-				}
-				engine.registerEventListener((SimulationBehaviorExtension) simExtension);
-			});
+		behaviorContainers.stream().flatMap(behaviorContainer -> behaviorContainer.getExtensions().stream())
+				.forEach(simExtensionClass -> {
+					final Object simExtension = childInjector.getInstance(simExtensionClass);
+					if (!(simExtension instanceof SimulationBehaviorExtension)) {
+						return;
+					}
+					engine.registerEventListener((SimulationBehaviorExtension) simExtension);
+				});
 
 		engine.registerEventListener(new CoreBehavior(this));
 		this.initialized = true;
