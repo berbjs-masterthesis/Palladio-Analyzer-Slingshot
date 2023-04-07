@@ -106,6 +106,7 @@ public final class BusImplementation implements Bus {
 		Objects.requireNonNull(object, "Observer to register must not be null.");
 		final Class<?> observerClass = object.getClass();
 
+
 		final CompositeDisposable composite = observers.computeIfAbsent(observerClass.getName(), name -> new CompositeDisposable());
 
 		final Set<EventType> events = new HashSet<>();

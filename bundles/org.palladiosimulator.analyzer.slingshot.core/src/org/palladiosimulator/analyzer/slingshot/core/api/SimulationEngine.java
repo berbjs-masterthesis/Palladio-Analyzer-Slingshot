@@ -22,7 +22,6 @@ public interface SimulationEngine {
 
 	public void registerEventListener(final SimulationBehaviorExtension guavaEventClass);
 
-	
 	public <T> void registerEventListener(final Subscriber<T> subscriber);
 
 }
