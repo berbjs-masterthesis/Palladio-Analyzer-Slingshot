@@ -56,8 +56,7 @@ public final class Result<T> {
 		return new Result<>(resultEvents);
 	}
 
-	@Deprecated
 	public static <T> Result<T> empty() {
-		return new Result<>(List.of());
+		return new Result<>(null);
 	}
 }

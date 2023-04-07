@@ -15,6 +15,9 @@ import org.palladiosimulator.analyzer.slingshot.core.events.SimulationFinished;
 import org.palladiosimulator.analyzer.slingshot.core.events.SimulationStarted;
 import org.palladiosimulator.analyzer.slingshot.core.extension.SimulationBehaviorContainer;
 import org.palladiosimulator.analyzer.slingshot.core.extension.SimulationBehaviorExtension;
+import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.Subscriber;
+
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -127,6 +130,7 @@ public class SlingshotSimulationDriver implements SimulationDriver {
 		private final IProgressMonitor monitor;
 
 		public SimulationDriverSubModule(final IProgressMonitor monitor) {
+
 			this.monitor = monitor;
 		}
 
@@ -135,9 +139,22 @@ public class SlingshotSimulationDriver implements SimulationDriver {
 			return this.monitor;
 		}
 
+
 //		@Provides
 //		public SimuComConfig config() {
 //			return config;
 //		}
+
 	}
+
+	@Override
+	public boolean isInitialized() {
+		return this.initialized;
+	}
+
+	@Override
+	public <T extends DESEvent> void registerEventHandler(final Subscriber<T> subscriber) {
+		this.engine.registerEventListener(subscriber);
+	}
+
 }

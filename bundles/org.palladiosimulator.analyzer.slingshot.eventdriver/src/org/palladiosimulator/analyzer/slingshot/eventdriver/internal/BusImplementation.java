@@ -11,15 +11,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.apache.log4j.Logger;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.Bus;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.annotations.OnException;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.annotations.PostIntercept;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.annotations.PreIntercept;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.annotations.Subscribe;
-import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.AbstractSubscriber;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.AnnotatedSubscriber;
+import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.Subscriber;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.interceptors.CompositeInterceptor;
-import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.interceptors.InterceptorInformation;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.interceptors.PostInterceptor;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.entity.interceptors.PreInterceptor;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.internal.contractchecker.EventContractChecker;
@@ -29,20 +29,30 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 
+/**
+ *
+ *
+ * @author Julijan Katic
+ *
+ */
 public final class BusImplementation implements Bus {
+
+	private static final Logger LOGGER = Logger.getLogger(BusImplementation.class);
 
 	private final Subject<Object> bus;
 
-	/** Maps events (event classes) to handlers */
-	private final Map<Class<?>, CompositeDisposable> observers = new HashMap<>();
+	/** Maps IDs to handlers */
+	private final Map<String, CompositeDisposable> observers = new HashMap<>();
 
+	/** The global interceptor */
 	private final CompositeInterceptor compositeInterceptor = new CompositeInterceptor();
 
 	/** Maps exception classes to set of exception handlers */
 	private final Map<Class<?>, Set<Consumer<? super Throwable>>> exceptionHandlers = new HashMap<>();
 
 
-	private final Map<Class<?>, Set<AbstractSubscriber<?>>> subscribers = new HashMap<>();
+	private final Map<Class<?>, Set<Subscriber<?>>> subscribers = new HashMap<>();
+
 
 	private boolean registrationOpened = true;
 	private boolean invocationOpened = true;
@@ -70,6 +80,24 @@ public final class BusImplementation implements Bus {
 	}
 
 	@Override
+	public <T> void register(final Subscriber<T> subscriber) {
+		if (!this.registrationOpened) {
+			throw new IllegalStateException("This bus has closed registration for new subscribers");
+		}
+		Objects.requireNonNull(subscriber, "Subscriber must not be null!");
+
+		subscriber.addPreInterceptor(compositeInterceptor);
+		subscriber.addPostInterceptor(compositeInterceptor);
+
+		observers.computeIfAbsent(subscriber.getEnclosingType()
+											.map(Class::getName)
+											.orElseGet(subscriber::getName), id -> new CompositeDisposable())
+				 .add(this.bus.ofType(subscriber.getEventType())
+						 	  .doOnNext(this::doOnNext)
+						 	  .subscribe(subscriber, this::doError));
+	}
+
+	@Override
 	public void register(final Object object) {
 		if (!this.registrationOpened) {
 			throw new IllegalStateException("This bus does not income new objects.");
@@ -78,11 +106,8 @@ public final class BusImplementation implements Bus {
 		Objects.requireNonNull(object, "Observer to register must not be null.");
 		final Class<?> observerClass = object.getClass();
 
-		if (observers.putIfAbsent(observerClass, new CompositeDisposable()) != null) {
-			throw new IllegalArgumentException(String.format("Cannot register observer %s : Observer has already been registered. ", observerClass.getSimpleName()));
-		}
 
-		final CompositeDisposable composite = observers.get(observerClass);
+		final CompositeDisposable composite = observers.computeIfAbsent(observerClass.getName(), name -> new CompositeDisposable());
 
 		final Set<EventType> events = new HashSet<>();
 
@@ -103,11 +128,15 @@ public final class BusImplementation implements Bus {
 	@Override
 	public void unregister(final Object object) {
 		Objects.requireNonNull(object, "Observer to unregister must not be null.");
-		final CompositeDisposable composite = this.observers.remove(object.getClass());
+		final CompositeDisposable composite;
+		if (object instanceof String) {
+			composite = this.observers.remove((String) object);
+		} else {
+			composite = this.observers.remove(object.getClass().getName());
+		}
 		Objects.requireNonNull(composite, "Missing observer; it was not registered before.");
 		composite.dispose();
-
-		final Set<AbstractSubscriber<?>> subscribers = this.subscribers.remove(observers.getClass());
+		final Set<Subscriber<?>> subscribers = this.subscribers.remove(observers.getClass());
 		if (subscribers != null) {
 			subscribers.clear();
 		}
@@ -153,22 +182,25 @@ public final class BusImplementation implements Bus {
 		}
 
 
-		System.out.println("\tAdded subscriber method " + method.getName());
-		composite.add(
-				this.bus.ofType(eventClass)
-						.doOnNext(ev -> System.out.println("ON NEXT " + ev.getClass().getSimpleName()))
-						.subscribe(
-								new AnnotatedSubscriber(method, object, compositeInterceptor, compositeInterceptor, subscribeAnnotation),
-								error -> {
-									System.out.println("Error happened: " + error.getClass().getSimpleName() + ":: " + error.getMessage());
-							    	this.exceptionHandlers.keySet().stream()
-							    		.filter(exClazz -> exClazz.isAssignableFrom(error.getClass()))
-							    		.flatMap(exClazz -> this.exceptionHandlers.get(exClazz).stream())
-							    		.forEach(exHandler -> exHandler.accept(error));
-							    }
-						)
-		);
+		this.register(AnnotatedSubscriber.fromJavaMethod(eventClass, object, method, subscribeAnnotation, compositeInterceptor, compositeInterceptor).build());
+	}
 
+	private void doError(final Throwable error) {
+		LOGGER.error("An error occurred: " + error.getClass().getSimpleName() + ":: " + error.getMessage(), error);
+		this.exceptionHandlers.keySet().stream()
+				.filter(exClazz -> exClazz.isAssignableFrom(error.getClass()))
+				.flatMap(exClazz -> this.exceptionHandlers.get(exClazz).stream())
+				.forEach(exHandler -> exHandler.accept(error));
+	}
+
+	/**
+	 * Helper method for debuging purposes. Every time an event happens (no matter what),
+	 * even if an error happened, this method will be called and debugged.
+	 *
+	 * @param event The event that happened
+	 */
+	private void doOnNext(final Object event) {
+		LOGGER.debug("About to call the subscribers for the following events: " + event.getClass().getSimpleName());
 	}
 
 	private void searchPreInterceptors(final Method method, final Object object) {
@@ -204,33 +236,21 @@ public final class BusImplementation implements Bus {
 
 		final Consumer<? super Throwable> onException;
 
-		if (params.length == 1) {
-			if (!Throwable.class.isAssignableFrom(params[0])) {
-				throw new IllegalArgumentException("First parameter must be throwable type");
-			}
-
-			onException = exception -> {
-				try {
-					method.invoke(target, exception);
-				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-					// TODO:
-				}
-			};
-		} else if (params.length == 2) {
-			if (!Throwable.class.isAssignableFrom(params[0]) || params[1].equals(InterceptorInformation.class)) {
-				throw new IllegalArgumentException("First parameter must be throwable type and the second must be of type InterceptorInformation");
-			}
-
-			onException = exception -> {
-				try {
-					method.invoke(target, exception, new InterceptorInformation(target, method));
-				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-					// TODO:
-				}
-			};
-		} else {
+		if (params.length != 1) {
 			throw new IllegalArgumentException("");
 		}
+		if (!Throwable.class.isAssignableFrom(params[0])) {
+			throw new IllegalArgumentException("First parameter must be throwable type");
+		}
+
+		onException = exception -> {
+			try {
+				method.invoke(target, exception);
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				// TODO:
+			}
+		};
+
 
 		this.exceptionHandlers.computeIfAbsent(params[0], eventType -> new HashSet<>())
 							  .add(onException);
@@ -273,12 +293,15 @@ public final class BusImplementation implements Bus {
 
 		@Override
 		public boolean equals(final Object obj) {
-			if (this == obj)
+			if (this == obj) {
 				return true;
-			if (obj == null)
+			}
+			if (obj == null) {
 				return false;
-			if (getClass() != obj.getClass())
+			}
+			if (getClass() != obj.getClass()) {
 				return false;
+			}
 			final EventType other = (EventType) obj;
 			return Objects.equals(eventClass, other.eventClass) && Arrays.equals(reification, other.reification);
 		}

@@ -28,8 +28,8 @@ public final class EventContractChecker {
 
 	@PostIntercept
 	public InterceptionResult postEventContractChecker(final InterceptorInformation information, final Object event, final Result<?> result) {
-		return getOnEventContract(information.getTarget(), event.getClass())
-			.flatMap(ctr -> Arrays.stream(ctr.then()))
+		return information.getAssociatedContracts().stream()
+			.flatMap(ctr -> ctr.getThen().stream())
 			.filter(cls -> result.getResultEvents().stream()
 					.map(r -> r.getClass())
 					.anyMatch(rcls -> rcls.isAssignableFrom(cls)))
@@ -37,8 +37,8 @@ public final class EventContractChecker {
 			.map(cls -> (InterceptionResult) InterceptionResult.success())
 			.orElseGet(() -> InterceptionResult.error(null));
 	}
-
-	private static Stream<OnEvent> getOnEventContract(final Object target, final Class<?> eventClass) {
+	
+	public static Stream<OnEvent> getOnEventContract(final Object target, final Class<?> eventClass) {
 		return Arrays.stream(target.getClass().getAnnotationsByType(OnEvent.class))
 				.filter(contract -> contract.when().isAssignableFrom(eventClass));
 	}
