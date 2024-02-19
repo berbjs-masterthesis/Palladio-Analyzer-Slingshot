@@ -8,9 +8,9 @@ import de.uka.ipd.sdq.workflow.mdsd.blackboard.MDSDBlackboard;
 
 public class WorkflowConfigurationModule extends AbstractSlingshotExtension {
 
-	static final SimuComConfigProvider simuComConfigProvider = new SimuComConfigProvider();
+	public static final SimuComConfigProvider simuComConfigProvider = new SimuComConfigProvider();
 	public static final MDSDBlackboardProvider blackboardProvider = new MDSDBlackboardProvider();
-	
+
 	public WorkflowConfigurationModule() {
 	}
 
