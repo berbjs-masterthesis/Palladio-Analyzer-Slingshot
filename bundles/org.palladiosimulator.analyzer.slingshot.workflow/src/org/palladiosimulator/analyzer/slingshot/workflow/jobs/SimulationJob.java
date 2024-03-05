@@ -37,6 +37,7 @@ public class SimulationJob implements IBlackboardInteractingJob<MDSDBlackboard> 
 		final PCMResourceSetPartition partition = (PCMResourceSetPartition)
 				this.blackboard.getPartition(ConstantsContainer.DEFAULT_PCM_INSTANCE_PARTITION_ID);
 
+		WorkflowConfigurationModule.simuComConfigProvider.set(simuComConfig);
 		WorkflowConfigurationModule.blackboardProvider.set(blackboard);
 		this.pcmResourceSetPartition.set(partition);
 		LOGGER.debug("Current partition: ");

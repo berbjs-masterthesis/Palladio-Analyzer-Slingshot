@@ -45,7 +45,6 @@ public class SimulationLauncher extends AbstractPCMLaunchConfigurationDelegate<S
 		}
 		
 		// Currently, this is the only way I found to set the SimuComConfig. Maybe there is a better way?
-		WorkflowConfigurationModule.simuComConfigProvider.set(config);
 		return simulationWorkflowConfiguration;
 	}
 
