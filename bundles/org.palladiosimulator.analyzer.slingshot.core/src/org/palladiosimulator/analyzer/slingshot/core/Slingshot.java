@@ -91,6 +91,6 @@ public class Slingshot extends Plugin {
 		final Layout layout = new PatternLayout("%n\tat %C.%M(%F:%L)%n\t%-5p %d [%t] - %m%n");
 		final Appender app = new ConsoleAppender(layout);
 		rootLogger.addAppender(app);
-		rootLogger.setLevel(Level.DEBUG);
+		rootLogger.setLevel(Level.ERROR);
 	}
 }

@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.Bus;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.annotations.OnException;
@@ -111,7 +112,7 @@ public final class BusImplementation implements Bus {
 
 		final Set<EventType> events = new HashSet<>();
 
-		System.out.println("Register " + object.getClass().getSimpleName());
+		LOGGER.info("Register " + object.getClass().getSimpleName());
 
 		for (final Method method : observerClass.getDeclaredMethods()) {
 			if (method.isBridge() || method.isSynthetic()) {
@@ -147,7 +148,7 @@ public final class BusImplementation implements Bus {
 		if (!this.invocationOpened) {
 			throw new IllegalStateException("The bus is not currently allowing posting of events.");
 		}
-		System.out.println("Now post " + event.getClass().getSimpleName());
+		LOGGER.info("Now post "+event.getClass().getSimpleName());
 		this.bus.onNext(Objects.requireNonNull(event));
 	}
 
