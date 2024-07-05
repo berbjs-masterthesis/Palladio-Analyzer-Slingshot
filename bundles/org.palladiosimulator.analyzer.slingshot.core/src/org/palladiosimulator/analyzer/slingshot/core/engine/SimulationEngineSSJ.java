@@ -1,10 +1,9 @@
 package org.palladiosimulator.analyzer.slingshot.core.engine;
 
-import org.apache.log4j.Logger;
-
 import javax.inject.Singleton;
 
 import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.palladiosimulator.analyzer.slingshot.common.events.DESEvent;
 import org.palladiosimulator.analyzer.slingshot.core.api.SimulationEngine;
 import org.palladiosimulator.analyzer.slingshot.core.api.SimulationInformation;
@@ -107,7 +106,8 @@ public class SimulationEngineSSJ implements SimulationEngine, SimulationInformat
 				return;
 			}
 
-			LOGGER.info("Even dispatched at " + this.simulator().time() + ": " + this.event.getName() + "(" + this.event.getId() + ")");
+			LOGGER.info(String.format("Event dispatched at %f: %s (%s)", this.simulator().time(), this.event.getName(),
+					this.event.getId()));
 
 			this.event.setTime(this.simulator().time());
 			eventBus.post(this.event);
@@ -121,7 +121,7 @@ public class SimulationEngineSSJ implements SimulationEngine, SimulationInformat
 		this.eventBus.register(guavaEventClass);
 	}
 
-	
+
 	@Override
 	public <T> void registerEventListener(final Subscriber<T> subscriber) {
 		this.eventBus.register(subscriber);

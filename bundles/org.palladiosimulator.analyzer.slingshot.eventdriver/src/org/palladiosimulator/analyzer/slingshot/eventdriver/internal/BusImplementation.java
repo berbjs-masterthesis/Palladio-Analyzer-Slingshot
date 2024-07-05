@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.Bus;
 import org.palladiosimulator.analyzer.slingshot.eventdriver.annotations.OnException;
@@ -131,7 +130,7 @@ public final class BusImplementation implements Bus {
 		Objects.requireNonNull(object, "Observer to unregister must not be null.");
 		final CompositeDisposable composite;
 		if (object instanceof String) {
-			composite = this.observers.remove((String) object);
+			composite = this.observers.remove(object);
 		} else {
 			composite = this.observers.remove(object.getClass().getName());
 		}
@@ -148,7 +147,7 @@ public final class BusImplementation implements Bus {
 		if (!this.invocationOpened) {
 			throw new IllegalStateException("The bus is not currently allowing posting of events.");
 		}
-		LOGGER.info("Now post "+event.getClass().getSimpleName());
+		LOGGER.debug("Now post " + event.getClass().getSimpleName());
 		this.bus.onNext(Objects.requireNonNull(event));
 	}
 
