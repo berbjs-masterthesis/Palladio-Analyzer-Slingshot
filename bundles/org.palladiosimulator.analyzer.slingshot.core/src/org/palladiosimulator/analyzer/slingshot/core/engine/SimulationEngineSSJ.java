@@ -106,7 +106,7 @@ public class SimulationEngineSSJ implements SimulationEngine, SimulationInformat
 				return;
 			}
 
-			LOGGER.info(String.format("Event dispatched at %f: %s (%s)", this.simulator().time(), this.event.getName(),
+			LOGGER.debug(String.format("Event dispatched at %f: %s (%s)", this.simulator().time(), this.event.getName(),
 					this.event.getId()));
 
 			this.event.setTime(this.simulator().time());

@@ -87,7 +87,7 @@ public class Subscriber<T> implements Consumer<T>, Disposable, Comparable<Subscr
 				.map(postInterceptor -> postInterceptor.apply(preInterceptionInformation, event, result))
 				.orElseGet(InterceptionResult::success);
 
-		LOGGER.info("Post interception result was successful: " + postInterceptionResult.wasSuccessful());
+		LOGGER.debug("Post interception result was successful: " + postInterceptionResult.wasSuccessful());
 	}
 
 	@Override
